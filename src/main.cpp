@@ -1,7 +1,7 @@
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 int main(int args, const char** argv)
 {
-    std::cout << "hello world" << std::endl;
+    SPDLOG_ERROR("hello world");
     return 0;
 }
