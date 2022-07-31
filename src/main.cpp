@@ -1,6 +1,4 @@
-#include "common.h"
-#include "shader.h"
-#include "program.h"
+#include "context.h"
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -22,12 +20,6 @@ void OnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
                 mods&GLFW_MOD_ALT ? "A" : "-");
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}
-
-void Render()
-{
-    glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 int main(int args, const char** argv)
@@ -65,14 +57,13 @@ int main(int args, const char** argv)
     }
     auto glVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL context version: {}", glVersion);
-    
-    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
-    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
-    SPDLOG_INFO("vertex shader id: {}", vertexShader->Get());
-    SPDLOG_INFO("fragment shader id: {}", fragmentShader->Get());
 
-    auto program = Program::Create({fragmentShader, vertexShader});
-    SPDLOG_INFO("program id: {}", program->Get());
+    auto context = Context::Create();
+    if (!context) {
+        SPDLOG_ERROR("failed to create context");
+        glfwTerminate();
+        return -1;
+    }
 
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
@@ -82,9 +73,10 @@ int main(int args, const char** argv)
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        Render();
+        context->Render();
         glfwSwapBuffers(window);
     }
+    context = nullptr;  // free context memory
 
     glfwTerminate();
 
