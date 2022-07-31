@@ -1,5 +1,6 @@
 #include "common.h"
 #include "shader.h"
+#include "program.h"
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,7 +12,7 @@ void OnFramebufferSizeChange(GLFWwindow* window, int width, int height)
 }
 
 void OnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
-{   
+{    
     SPDLOG_INFO("key: {}, scancod: {}, action: {}, mods: {}{}{}",key, scancode,
                 action==GLFW_PRESS ? "Pressed" :
                 action==GLFW_RELEASE ? "Released" :
@@ -54,7 +55,7 @@ int main(int args, const char** argv)
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window); 
     
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -65,10 +66,13 @@ int main(int args, const char** argv)
     auto glVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL context version: {}", glVersion);
     
-    auto vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
-    auto fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
+    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
     SPDLOG_INFO("vertex shader id: {}", vertexShader->Get());
     SPDLOG_INFO("fragment shader id: {}", fragmentShader->Get());
+
+    auto program = Program::Create({fragmentShader, vertexShader});
+    SPDLOG_INFO("program id: {}", program->Get());
 
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
