@@ -9,12 +9,31 @@ std::unique_ptr<Context> Context::Create() {
 
 void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(program->Get());
-    glDrawArrays(GL_POINTS, 0, 1);
+    
+    program->Use();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 bool Context::Init() {
+
+    float vertices[] = {
+        -0.5f, 0.5f, 0.0f, // LT
+        0.5f, 0.5f, 0.0f, // RT
+        -0.5f, -0.5f, 0.0f, // LB
+        0.5f, -0.5f, 0.0f,  // RB
+    };
+
+    uint32_t indices[] = {
+        0, 1, 2,
+        1, 2, 3,
+    };
+
+    vertexLayout = VertexLayout::Create();
+    vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 12);
+    vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
+    indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
+
     std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
     std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
     if (!vertexShader || !fragmentShader)
@@ -29,10 +48,6 @@ bool Context::Init() {
     SPDLOG_INFO("program id: {}", program->Get());
 
     glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
-
-    uint32_t vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
     return true;
 }

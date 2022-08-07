@@ -9,6 +9,7 @@ public:
     static std::unique_ptr<Program> Create(const std::vector<std::shared_ptr<Shader>>& shaders);
     ~Program();
     uint32_t Get() const { return programId; }
+    void Use() const;
 private:
     Program() {}
     bool Link(const std::vector<std::shared_ptr<Shader>>& shaders);
