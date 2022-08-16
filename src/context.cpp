@@ -9,24 +9,17 @@ std::unique_ptr<Context> Context::Create() {
 
 void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
-    
-    static float time = 0.0f;
-    float t = sinf(time) * 0.5f + 0.5f; // 0 ~ 1
-    auto loc = glGetUniformLocation(program->Get(), "color");
     program->Use();
-    glUniform4f(loc, t*t, 2.0f*t*(1.0f-t), (1.0f-t)*(1.0f-t), 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    time += 0.0016f;
 }
 
 bool Context::Init() {
 
     float vertices[] = {
-        -0.5f, 0.5f, 0.0f, // LT
-        0.5f, 0.5f, 0.0f, // RT
-        -0.5f, -0.5f, 0.0f, // LB
-        0.5f, -0.5f, 0.0f,  // RB
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f,// LT - Y
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // RT - R
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // LB - B
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f // RB - G
     };
 
     uint32_t indices[] = {
@@ -35,8 +28,9 @@ bool Context::Init() {
     };
 
     vertexLayout = VertexLayout::Create();
-    vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 12);
-    vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+    vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 24);
+    vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+    vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, sizeof(float) * 3);
 
     indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
 
@@ -53,10 +47,7 @@ bool Context::Init() {
         return false;
     SPDLOG_INFO("program id: {}", program->Get());
 
-    // auto loc = glGetUniformLocation(program->Get(), "color");
-    // program->Use();
-    // glUniform4f(loc, 1.0f, 1.0f, 0.0f, 1.0f);
-
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
+
     return true;
 }
