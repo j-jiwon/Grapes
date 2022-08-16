@@ -10,8 +10,14 @@ std::unique_ptr<Context> Context::Create() {
 void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
     
+    static float time = 0.0f;
+    float t = sinf(time) * 0.5f + 0.5f; // 0 ~ 1
+    auto loc = glGetUniformLocation(program->Get(), "color");
     program->Use();
+    glUniform4f(loc, t*t, 2.0f*t*(1.0f-t), (1.0f-t)*(1.0f-t), 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    time += 0.0016f;
 }
 
 bool Context::Init() {
@@ -47,7 +53,10 @@ bool Context::Init() {
         return false;
     SPDLOG_INFO("program id: {}", program->Get());
 
-    glClearColor(1.0f, 1.0f, 0.0f, 0.0f);
+    // auto loc = glGetUniformLocation(program->Get(), "color");
+    // program->Use();
+    // glUniform4f(loc, 1.0f, 1.0f, 0.0f, 1.0f);
 
+    glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
     return true;
 }
