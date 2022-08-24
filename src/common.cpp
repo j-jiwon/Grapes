@@ -12,3 +12,4 @@ std::optional<std::string> LoadTextFile(const std::string& filename) {
     text << fin.rdbuf();
     return text.str();
 }
+ 
