@@ -19,6 +19,7 @@ private:
     std::unique_ptr<VertexLayout> vertexLayout;
     std::unique_ptr<Buffer> vertexBuffer;
     std::unique_ptr<Buffer> indexBuffer;
+    uint32_t textureId;
 };
 
 #endif

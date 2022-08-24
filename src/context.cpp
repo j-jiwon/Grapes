@@ -17,10 +17,11 @@ void Context::Render() {
 bool Context::Init() {
 
     float vertices[] = {
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f,// LT - Y
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // RT - R
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // LB - B
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f // RB - G
+        // x, y, z, r, g, b, u, v
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // LT - Y
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // RT - R
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // LB - B
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f // RB - G
     };
 
     uint32_t indices[] = {
@@ -29,14 +30,15 @@ bool Context::Init() {
     };
 
     vertexLayout = VertexLayout::Create();
-    vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 24);
-    vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-    vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, sizeof(float) * 3);
+    vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER, GL_STATIC_DRAW, vertices, sizeof(float) * 32);
+    vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0);
+    vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, sizeof(float) * 3);
+    vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, sizeof(float) * 6);
 
     indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
 
-    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
-    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
+    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/texture.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/texture.fs", GL_FRAGMENT_SHADER);
     if (!vertexShader || !fragmentShader)
         return false;
     
@@ -50,10 +52,23 @@ bool Context::Init() {
 
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
-    auto image = Image::Load("./images/container.jpg");
+    // load image 
+    auto image = Image::Load("./images/wall.jpg");
     if (!image)
         return false;
     SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
+
+    // read image data from texture
+    glGenTextures(1, &textureId);  // 1 texture
+    glBindTexture(GL_TEXTURE_2D, textureId);  // binding 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+        image->GetWidth(), image->GetHeight(), 0, 
+        GL_RGB, GL_UNSIGNED_BYTE, image->GetData());  // copy image data and send to GPU
 
     return true;
 }
