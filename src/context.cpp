@@ -1,4 +1,5 @@
 #include "context.h"
+#include "image.h"
 
 std::unique_ptr<Context> Context::Create() {
     auto context = std::unique_ptr<Context>(new Context());
@@ -48,6 +49,11 @@ bool Context::Init() {
     SPDLOG_INFO("program id: {}", program->Get());
 
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
+
+    auto image = Image::Load("./images/container.jpg");
+    if (!image)
+        return false;
+    SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
 
     return true;
 }

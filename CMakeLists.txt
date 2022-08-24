@@ -16,6 +16,7 @@ add_executable(${PROJECT_NAME}
     src/context.cpp src/context.h
     src/buffer.cpp src/buffer.h
     src/vertex_layout.cpp src/vertex_layout.h
+    src/image.cpp src/image.h
 )
 
 include(Dependency.cmake)
