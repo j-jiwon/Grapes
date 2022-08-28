@@ -9,6 +9,35 @@ std::unique_ptr<Image> Image::Load(const std::string& filepath) {
     return std::move(image);
 }
 
+std::unique_ptr<Image> Image::Create(int width, int height, int channelCount) {
+    auto image = std::unique_ptr<Image>(new Image());
+    if (!image->Allocate(width, height, channelCount))
+        return nullptr;
+    return std::move(image);
+}
+
+bool Image::Allocate(int _width, int _height, int _channleCount) {
+    width = _width;
+    height = _height;
+    channelCount = _channleCount;
+    data = (uint8_t*)malloc(width * height * channelCount);
+    return data ? true : false;
+}
+
+void Image::SetCheckerBoardImage(int gridX, int gridY) {
+    for (int j = 0; j < height; ++j) {
+        for (int i = 0; i < width; ++i) {
+            int pos = (j * width + i) * channelCount;
+            bool even = ((i / gridX) + (j / gridY)) % 2 == 0;
+            uint8_t value = even ? 255 : 0;
+            for (int k = 0; k < channelCount; ++k)
+                data[pos + k] = value;
+            if (channelCount > 3)
+                data[3] = 255;
+        }
+    }
+}
+
 Image::~Image() {
     if (data) {
         stbi_image_free(data);

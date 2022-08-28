@@ -53,11 +53,17 @@ bool Context::Init() {
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
     // load image 
+    /*
     auto image = Image::Load("./images/wall.jpg");
     if (!image)
         return false;
     SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
 
+    textureId = Texture::CreateFromImage(image.get());
+    */
+   
+    auto image = Image::Create(512, 512);
+    image->SetCheckerBoardImage(16, 16);
     textureId = Texture::CreateFromImage(image.get());
 
     return true;
