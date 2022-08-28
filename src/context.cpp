@@ -53,18 +53,29 @@ bool Context::Init() {
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
 
     // load image 
-    /*
     auto image = Image::Load("./images/wall.jpg");
     if (!image)
         return false;
     SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
 
     textureId = Texture::CreateFromImage(image.get());
-    */
-   
-    auto image = Image::Create(512, 512);
-    image->SetCheckerBoardImage(16, 16);
-    textureId = Texture::CreateFromImage(image.get());
+    
+    auto image2 = Image::Load("./images/awesomeface.png");
+    textureId2 = Texture::CreateFromImage(image2.get());
+    glActiveTexture(GL_TEXTURE0);  // get number of texture slot -- slot0
+    glBindTexture(GL_TEXTURE_2D, textureId->Get()); // bind textureId to slot0
+    glActiveTexture(GL_TEXTURE1);  // slot1
+    glBindTexture(GL_TEXTURE_2D, textureId2->Get());  // bind textureId2 to slot1
+
+    program->Use();
+    // notify program of the texture slot number to be used 
+    glUniform1i(glGetUniformLocation(program->Get(), "tex"), 0);
+    glUniform1i(glGetUniformLocation(program->Get(), "tex2"), 1);
+
+    // make checker board image
+    // auto image = Image::Create(512, 512);
+    // image->SetCheckerBoardImage(16, 16);
+    // textureId = Texture::CreateFromImage(image.get());
 
     return true;
 }

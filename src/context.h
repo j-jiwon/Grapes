@@ -21,6 +21,7 @@ private:
     std::unique_ptr<Buffer> vertexBuffer;
     std::unique_ptr<Buffer> indexBuffer;
     std::unique_ptr<Texture> textureId;
+    std::unique_ptr<Texture> textureId2;
 };
 
 #endif
