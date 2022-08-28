@@ -58,17 +58,7 @@ bool Context::Init() {
         return false;
     SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
 
-    // read image data from texture
-    glGenTextures(1, &textureId);  // 1 texture
-    glBindTexture(GL_TEXTURE_2D, textureId);  // binding 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-        image->GetWidth(), image->GetHeight(), 0, 
-        GL_RGB, GL_UNSIGNED_BYTE, image->GetData());  // copy image data and send to GPU
+    textureId = Texture::CreateFromImage(image.get());
 
     return true;
 }

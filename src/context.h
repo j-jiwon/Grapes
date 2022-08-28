@@ -6,6 +6,7 @@
 #include "program.h"
 #include "buffer.h"
 #include "vertex_layout.h"
+#include "texture.h"
 
 class Context {
 public:
@@ -19,7 +20,7 @@ private:
     std::unique_ptr<VertexLayout> vertexLayout;
     std::unique_ptr<Buffer> vertexBuffer;
     std::unique_ptr<Buffer> indexBuffer;
-    uint32_t textureId;
+    std::unique_ptr<Texture> textureId;
 };
 
 #endif
