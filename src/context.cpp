@@ -71,11 +71,11 @@ bool Context::Init() {
     // notify program of the texture slot number to be used 
     glUniform1i(glGetUniformLocation(program->Get(), "tex"), 0);
     glUniform1i(glGetUniformLocation(program->Get(), "tex2"), 1);
-
-    // make checker board image
-    // auto image = Image::Create(512, 512);
-    // image->SetCheckerBoardImage(16, 16);
-    // textureId = Texture::CreateFromImage(image.get());
+    
+    // rotate 90 degree, z axis
+    auto transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    auto transformLoc = glGetUniformLocation(program->Get(), "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
     return true;
 }
