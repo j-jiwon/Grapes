@@ -45,6 +45,7 @@ Image::~Image() {
 }
 
 bool Image::LoadWithStb(const std::string& filepath) {
+    stbi_set_flip_vertically_on_load(true);
     data = stbi_load(filepath.c_str(), &width, &height, &channelCount, 0);
     if (!data) {
         SPDLOG_ERROR("failed to load image: {}", filepath);

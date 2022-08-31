@@ -9,9 +9,24 @@ std::unique_ptr<Context> Context::Create() {
 }
 
 void Context::Render() {
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glEnable(GL_DEPTH_TEST);
+    // program->Use();
+    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    program->Use();
+
+    auto projection = glm::perspective(glm::radians(45.0f),
+        (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto view = glm::translate(glm::mat4(1.0f),
+        glm::vec3(0.0f, 0.0f, -3.0f));
+    auto model = glm::rotate(glm::mat4(1.0f),
+        glm::radians((float)glfwGetTime() * 120.0f),
+        glm::vec3(1.0f, 0.5f, 0.0f));
+    auto transform = projection * view * model;
+    program->SetUniform("transform", transform);
+
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
@@ -98,21 +113,17 @@ bool Context::Init() {
 
     program->Use();
     // notify program of the texture slot number to be used 
-    glUniform1i(glGetUniformLocation(program->Get(), "tex"), 0);
-    glUniform1i(glGetUniformLocation(program->Get(), "tex2"), 1);
+    program->SetUniform("tex", 0);
+    program->SetUniform("tex2", 1);
     
     // x축으로 -55도 회전
-    auto model = glm::rotate(glm::mat4(1.0f),
-    glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     // 카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
-    auto view = glm::translate(glm::mat4(1.0f),
-    glm::vec3(0.0f, 0.0f, -3.0f));
+    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
     // 종횡비 4:3, 세로화각 45도의 원근 투영
-    auto projection = glm::perspective(glm::radians(45.0f),
-    (float)640 / (float)480, 0.01f, 10.0f);
-    auto transform = projection * view * model;
-    auto transformLoc = glGetUniformLocation(program->Get(), "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto transform = projection * view * model; 
+    program->SetUniform("transform", transform);
 
     return true;
 }

@@ -10,6 +10,9 @@ public:
     ~Program();
     uint32_t Get() const { return programId; }
     void Use() const;
+    void SetUniform(const std::string& name, int value) const;
+    void SetUniform(const std::string& name, const glm::mat4& value) const;
+
 private:
     Program() {}
     bool Link(const std::vector<std::shared_ptr<Shader>>& shaders);
