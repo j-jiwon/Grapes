@@ -8,11 +8,66 @@ std::unique_ptr<Context> Context::Create() {
     return std::move(context);
 }
 
+void Context::ProcessInput(GLFWwindow* window){
+    if (!cameraControl) return;
+
+    const float cameraSpeed = 0.05f;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+
+    auto cameraRight = glm::normalize(glm::cross(cameraUp, -cameraFront));
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraRight;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraRight;
+
+    auto cameraUp = glm::normalize(glm::cross(-cameraFront, cameraRight));
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraUp;
+}
+
+void Context::Reshape(int width, int height){
+    windowWidth = width;
+    windowHeight = height;
+    glViewport(0, 0, windowWidth, windowHeight);
+}
+
+void Context::MouseMove(double x, double y){
+    if (!cameraControl) return;
+    auto pos = glm::vec2((float)x, (float)y);
+    auto deltaPos = pos - prevMousePos;
+
+    const float cameraRotSpeed = 0.8f;
+    cameraYaw -= deltaPos.x * cameraRotSpeed;
+    cameraPitch -= deltaPos.y * cameraRotSpeed;
+
+    if (cameraYaw < 0.0f) cameraYaw += 360.0f;
+    if (cameraYaw > 360.0f) cameraYaw -= 360.0f;
+
+    if (cameraPitch >= 90.0f) cameraPitch = 90.0f;
+    if (cameraPitch <= -90.0f) cameraPitch = -90.0f;
+
+    prevMousePos = pos;
+}
+
+void Context::MouseButton(int button, int action, double x, double y){
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            prevMousePos = glm::vec2((float(x), (float)y));
+            cameraControl = true;
+        }
+        else if (action == GLFW_RELEASE) {
+            cameraControl = false;
+        }
+    }
+}
+
+
 void Context::Render() {
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glEnable(GL_DEPTH_TEST);
-    // program->Use();
-    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
   std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -29,26 +84,16 @@ void Context::Render() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    auto projection = glm::perspective(glm::radians(45.0f),
-        (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 60.0f);
 
-    float angle = (float)glfwGetTime() * glm::pi<float>() * 0.5f;
-    auto x = sinf(angle) * 10.0f;
-    auto z = cosf(angle) * 10.0f;
-    auto cameraPos = glm::vec3(x, 0.0f, z);
-    auto cameraTarget = glm::vec3(0, 0.0f, 0.0f);
-    auto cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    
-    // auto cameraZ = glm::normalize(cameraPos - cameraTarget);
-    // auto cameraX = glm::normalize(glm::cross(cameraUp, cameraZ));
-    // auto cameraY = glm::cross(cameraZ, cameraX);
-    // auto cameraMat = glm::mat4(glm::vec4(cameraX, 0.0f),
-    //     glm::vec4(cameraY, 0.0f),
-    //     glm::vec4(cameraZ, 0.0f),
-    //     glm::vec4(cameraPos, 1.0f));
-    // auto view = glm::inverse(cameraMat);
-    // 위 연산 과정 대체 
-    auto view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    cameraFront = glm::rotate(glm::mat4(1.0f), glm::radians(cameraYaw), glm::vec3(0.0f, 1.0f, 0.0f))
+            * glm::rotate(glm::mat4(1.0f), glm::radians(cameraPitch), glm::vec3(1.0f, 0.0f, 0.0f))
+            * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+
+    auto projection = glm::perspective(glm::radians(45.0f),
+        (float)windowWidth / (float)windowHeight, 0.01f, 60.0f);
+
+    auto view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         auto& pos = cubePositions[i];
@@ -147,15 +192,6 @@ bool Context::Init() {
     // notify program of the texture slot number to be used 
     program->SetUniform("tex", 0);
     program->SetUniform("tex2", 1);
-    
-    // x축으로 -55도 회전
-    auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    // 카메라는 원점으로부터 z축 방향으로 -3만큼 떨어짐
-    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-    // 종횡비 4:3, 세로화각 45도의 원근 투영
-    auto projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.01f, 10.0f);
-    auto transform = projection * view * model; 
-    program->SetUniform("transform", transform);
 
     return true;
 }

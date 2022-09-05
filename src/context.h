@@ -12,6 +12,11 @@ class Context {
 public:
     static std::unique_ptr<Context> Create();
     void Render();    
+    void ProcessInput(GLFWwindow* window);
+    void MouseMove(double x, double y);
+    void MouseButton(int button, int action, double x, double y);
+    void Reshape(int width, int height);
+
 private:
     Context() {}
     bool Init();
@@ -22,6 +27,17 @@ private:
     std::unique_ptr<Buffer> indexBuffer;
     std::unique_ptr<Texture> textureId;
     std::unique_ptr<Texture> textureId2;
+
+    bool cameraControl { false };
+    glm::vec2 prevMousePos { glm::vec2(0.0f) };
+    float cameraPitch { 0.0f };
+    float cameraYaw { 0.0f };
+    glm::vec3 cameraPos { glm::vec3(0.0f, 0.0f, 3.0f) };
+    glm::vec3 cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) } ;
+    glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f, 0.0f) };
+
+    int windowWidth = {WINDOW_WIDTH};
+    int windowHeight = {WINDOW_HEIGHT};
 };
 
 #endif

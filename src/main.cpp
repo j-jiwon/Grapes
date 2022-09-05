@@ -7,6 +7,8 @@ void OnFramebufferSizeChange(GLFWwindow* window, int width, int height)
 {
     SPDLOG_INFO("framebuffer size: {} x {}", width, height);
     glViewport(0, 0, width, height);
+    auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    context->Reshape(width, height);
 }
 
 void OnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -20,6 +22,18 @@ void OnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
                 mods&GLFW_MOD_ALT ? "A" : "-");
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void OnMousePos(GLFWwindow* window, double x, double y) {
+    auto context = (Context*)glfwGetWindowUserPointer(window);
+    context->MouseMove(x, y);
+}
+
+void OnMouseButton(GLFWwindow* window, int button, int action, int modifier){
+    auto context = (Context*)glfwGetWindowUserPointer(window);
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    context->MouseButton(button, action, x, y);
 }
 
 int main(int args, const char** argv)
@@ -64,15 +78,18 @@ int main(int args, const char** argv)
         glfwTerminate();
         return -1;
     }
-
+    glfwSetWindowUserPointer(window, context.get());
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
     glfwSetKeyCallback(window, OnKeyEvent);
+    glfwSetCursorPosCallback(window, OnMousePos);
+    glfwSetMouseButtonCallback(window, OnMouseButton);
 
     SPDLOG_INFO("start main loop");
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        context->ProcessInput(window);
         context->Render();
         glfwSwapBuffers(window);
     }
