@@ -48,8 +48,8 @@ void Context::MouseMove(double x, double y){
     if (cameraYaw < 0.0f) cameraYaw += 360.0f;
     if (cameraYaw > 360.0f) cameraYaw -= 360.0f;
 
-    if (cameraPitch >= 90.0f) cameraPitch = 90.0f;
-    if (cameraPitch <= -90.0f) cameraPitch = -90.0f;
+    if (cameraPitch > 89.0f) cameraPitch = 89.0f;
+    if (cameraPitch < -89.0f) cameraPitch = -89.0f;
 
     prevMousePos = pos;
 }
@@ -57,7 +57,7 @@ void Context::MouseMove(double x, double y){
 void Context::MouseButton(int button, int action, double x, double y){
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (action == GLFW_PRESS) {
-            prevMousePos = glm::vec2((float(x), (float)y));
+            prevMousePos = glm::vec2((float)x, (float)y);
             cameraControl = true;
         }
         else if (action == GLFW_RELEASE) {
