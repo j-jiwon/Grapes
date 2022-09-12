@@ -83,8 +83,20 @@ void Context::Render() {
             cameraPitch = 0.0f;
             cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
         }
+
+        if (ImGui::CollapsingHeader("light")) {
+            ImGui::ColorEdit3("light color", glm::value_ptr(lightColor));
+            ImGui::ColorEdit3("object color", glm::value_ptr(objectColor));
+            ImGui::SliderFloat("ambient strength", &ambientStrength, 0.0f, 1.0f);
+        }
     }
     ImGui::End();
+    
+    // set shader variables
+    program->Use();
+    program->SetUniform("lightColor", lightColor);
+    program->SetUniform("objectColor", objectColor);
+    program->SetUniform("ambientStrength", ambientStrength);
 
     std::vector<glm::vec3> cubePositions = {
         glm::vec3( 0.0f, 0.0f, 0.0f),
@@ -175,8 +187,8 @@ bool Context::Init() {
     
     indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
-    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/texture.vs", GL_VERTEX_SHADER);
-    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/texture.fs", GL_FRAGMENT_SHADER);
+    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/lighting.vs", GL_VERTEX_SHADER);
+    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/lighting.fs", GL_FRAGMENT_SHADER);
     if (!vertexShader || !fragmentShader)
         return false;
     
