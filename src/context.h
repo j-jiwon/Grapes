@@ -28,8 +28,11 @@ private:
     std::unique_ptr<Texture> textureId;
     std::unique_ptr<Texture> textureId2;
 
+    bool animation { true };
+
     glm::vec4 clearColor { glm::vec4(0.1f, 0.2f, 0.3f, 0.0f) };
 
+    glm::vec3 lightPos { glm::vec3(3.0f, 3.0f, 3.0f) };
     glm::vec3 lightColor { glm::vec3(1.0f, 1.0f, 1.0f) };
     glm::vec3 objectColor { glm::vec3(1.0f, 0.5f, 0.0f) };
     float ambientStrength { 0.1f };
