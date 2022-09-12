@@ -85,12 +85,18 @@ void Context::Render() {
         }
 
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::DragFloat3("light pos", glm::value_ptr(lightPos), 0.01f);
-            ImGui::ColorEdit3("light color", glm::value_ptr(lightColor));
-            ImGui::ColorEdit3("object color", glm::value_ptr(objectColor));
-            ImGui::SliderFloat("ambient strength", &ambientStrength, 0.0f, 1.0f);
+            ImGui::DragFloat3("l.position", glm::value_ptr(light.position), 0.01f);
+            ImGui::ColorEdit3("l.ambient", glm::value_ptr(light.ambient));
+            ImGui::ColorEdit3("l.diffuse", glm::value_ptr(light.diffuse));
+            ImGui::ColorEdit3("l.specular", glm::value_ptr(light.specular));
         }
-
+        
+        if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::ColorEdit3("m.ambient", glm::value_ptr(material.ambient));
+            ImGui::ColorEdit3("m.diffuse", glm::value_ptr(material.diffuse));
+            ImGui::ColorEdit3("m.specular", glm::value_ptr(material.specular));
+            ImGui::DragFloat("m.shininess", &material.shininess, 1.0f, 1.0f, 256.0f);
+        }
         ImGui::Checkbox("animation", &animation);
     }
     ImGui::End();
@@ -123,10 +129,10 @@ void Context::Render() {
 
     // after computing projection and view matrix
     auto lightModelTransform =
-    glm::translate(glm::mat4(1.0), lightPos) *
+    glm::translate(glm::mat4(1.0), light.position) *
     glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
     program->Use();
-    program->SetUniform("lightPos", lightPos);
+    program->SetUniform("lightPos", light.position);
     program->SetUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
     program->SetUniform("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
     program->SetUniform("ambientStrength", 1.0f);
@@ -134,12 +140,16 @@ void Context::Render() {
     program->SetUniform("modelTransform", lightModelTransform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-        // set shader variables
+    // set shader variables
     program->Use();
-    program->SetUniform("lightPos", lightPos);
-    program->SetUniform("lightColor", lightColor);
-    program->SetUniform("objectColor", objectColor);
-    program->SetUniform("ambientStrength", ambientStrength);
+	program->SetUniform("light.position", light.position);
+    program->SetUniform("light.ambient", light.ambient);
+    program->SetUniform("light.diffuse", light.diffuse);
+    program->SetUniform("light.specular", light.specular);
+    program->SetUniform("material.ambient", material.ambient);
+    program->SetUniform("material.diffuse", material.diffuse);
+    program->SetUniform("material.specular", material.specular);
+    program->SetUniform("material.shininess", material.shininess);
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         auto& pos = cubePositions[i];
