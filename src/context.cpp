@@ -92,9 +92,6 @@ void Context::Render() {
         }
         
         if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::ColorEdit3("m.ambient", glm::value_ptr(material.ambient));
-            ImGui::ColorEdit3("m.diffuse", glm::value_ptr(material.diffuse));
-            ImGui::ColorEdit3("m.specular", glm::value_ptr(material.specular));
             ImGui::DragFloat("m.shininess", &material.shininess, 1.0f, 1.0f, 256.0f);
         }
         ImGui::Checkbox("animation", &animation);
@@ -129,15 +126,12 @@ void Context::Render() {
 
     // after computing projection and view matrix
     auto lightModelTransform =
-    glm::translate(glm::mat4(1.0), light.position) *
-    glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
-    program->Use();
-    program->SetUniform("lightPos", light.position);
-    program->SetUniform("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    program->SetUniform("objectColor", glm::vec3(1.0f, 1.0f, 1.0f));
-    program->SetUniform("ambientStrength", 1.0f);
-    program->SetUniform("transform", projection * view * lightModelTransform);
-    program->SetUniform("modelTransform", lightModelTransform);
+        glm::translate(glm::mat4(1.0), light.position) *
+        glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+
+    simpleProgram->Use();
+    simpleProgram->SetUniform("color", glm::vec4(light.ambient + light.diffuse, 1.0f));
+    simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     // set shader variables
@@ -146,10 +140,14 @@ void Context::Render() {
     program->SetUniform("light.ambient", light.ambient);
     program->SetUniform("light.diffuse", light.diffuse);
     program->SetUniform("light.specular", light.specular);
-    program->SetUniform("material.ambient", material.ambient);
-    program->SetUniform("material.diffuse", material.diffuse);
-    program->SetUniform("material.specular", material.specular);
+    program->SetUniform("material.diffuse", 0);
+    program->SetUniform("material.specular", 1);
     program->SetUniform("material.shininess", material.shininess);
+
+    glActiveTexture(GL_TEXTURE0);
+    material.diffuse->Bind();
+    glActiveTexture(GL_TEXTURE1);
+    material.specular->Bind();
 
     for (size_t i = 0; i < cubePositions.size(); i++){
         auto& pos = cubePositions[i];
@@ -216,40 +214,19 @@ bool Context::Init() {
     
     indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t) * 36);
 
-    std::shared_ptr<Shader> vertexShader = Shader::CreateFromFile("./shader/lighting.vs", GL_VERTEX_SHADER);
-    std::shared_ptr<Shader> fragmentShader = Shader::CreateFromFile("./shader/lighting.fs", GL_FRAGMENT_SHADER);
-    if (!vertexShader || !fragmentShader)
+    simpleProgram = Program::Create("./shader/simple.vs", "./shader/simple.fs");
+    if (!simpleProgram)
         return false;
-    
-    SPDLOG_INFO("vertex shader id: {}", vertexShader->Get());
-    SPDLOG_INFO("fragment shader id: {}", fragmentShader->Get());
 
-    program = Program::Create({fragmentShader, vertexShader});
+    program = Program::Create("./shader/lighting.vs", "./shader/lighting.fs");
     if (!program)
         return false;
-    SPDLOG_INFO("program id: {}", program->Get());
 
-    glClearColor(0.0f, 0.1f, 0.2f, 0.0f);
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    glEnable(GL_DEPTH_TEST);
 
-    // load image 
-    auto image = Image::Load("./images/wall.jpg");
-    if (!image)
-        return false;
-    SPDLOG_INFO("image: {} * {}, {} channels", image->GetWidth(), image->GetHeight(), image->GetChannelCount());
-
-    textureId = Texture::CreateFromImage(image.get());
-    
-    auto image2 = Image::Load("./images/awesomeface.png");
-    textureId2 = Texture::CreateFromImage(image2.get());
-    glActiveTexture(GL_TEXTURE0);  // get number of texture slot -- slot0
-    glBindTexture(GL_TEXTURE_2D, textureId->Get()); // bind textureId to slot0
-    glActiveTexture(GL_TEXTURE1);  // slot1
-    glBindTexture(GL_TEXTURE_2D, textureId2->Get());  // bind textureId2 to slot1
-
-    program->Use();
-    // notify program of the texture slot number to be used 
-    program->SetUniform("tex", 0);
-    program->SetUniform("tex2", 1);
+    material.diffuse = Texture::CreateFromImage(Image::Load("./images/container2.png").get());
+    material.specular = Texture::CreateFromImage(Image::Load("./images/container2_specular.png").get());
 
     return true;
 }

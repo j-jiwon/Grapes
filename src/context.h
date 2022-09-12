@@ -21,6 +21,7 @@ private:
     Context() {}
     bool Init();
     std::unique_ptr<Program> program;
+    std::unique_ptr<Program> simpleProgram;
 
     std::unique_ptr<VertexLayout> vertexLayout;
     std::unique_ptr<Buffer> vertexBuffer;
@@ -41,9 +42,8 @@ private:
     Light light;
 
     struct Material {
-        glm::vec3 ambient { glm::vec3(1.0f, 0.5f, 0.3f) };
-        glm::vec3 diffuse { glm::vec3(1.0f, 0.5f, 0.3f) };
-        glm::vec3 specular { glm::vec3(0.5f, 0.5f, 0.5f) };
+        std::unique_ptr<Texture> diffuse;
+        std::unique_ptr<Texture> specular;
         float shininess { 32.0f };
     };
     Material material;
@@ -53,7 +53,7 @@ private:
     float cameraPitch { 0.0f };
     float cameraYaw { 0.0f };
     glm::vec3 cameraPos { glm::vec3(0.0f, 0.0f, 3.0f) };
-    glm::vec3 cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) } ;
+    glm::vec3 cameraFront { glm::vec3(0.0f, -1.0f, 0.0f) } ;
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f, 0.0f) };
 
     int windowWidth = {WINDOW_WIDTH};
