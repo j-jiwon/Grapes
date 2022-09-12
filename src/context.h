@@ -28,6 +28,8 @@ private:
     std::unique_ptr<Texture> textureId;
     std::unique_ptr<Texture> textureId2;
 
+    glm::vec4 clearColor { glm::vec4(0.1f, 0.2f, 0.3f, 0.0f) };
+
     bool cameraControl { false };
     glm::vec2 prevMousePos { glm::vec2(0.0f) };
     float cameraPitch { 0.0f };
