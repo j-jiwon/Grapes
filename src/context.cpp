@@ -120,7 +120,7 @@ void Context::Render() {
 
 
     auto projection = glm::perspective(glm::radians(45.0f),
-        (float)windowWidth / (float)windowHeight, 0.01f, 60.0f);
+        (float)windowWidth / (float)windowHeight, 0.01f, 30.0f);
 
     auto view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
@@ -136,6 +136,7 @@ void Context::Render() {
 
     // set shader variables
     program->Use();
+    program->SetUniform("viewPos", cameraPos);
 	program->SetUniform("light.position", light.position);
     program->SetUniform("light.ambient", light.ambient);
     program->SetUniform("light.diffuse", light.diffuse);
