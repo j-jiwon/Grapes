@@ -86,6 +86,9 @@ void Context::Render() {
 
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::DragFloat3("l.position", glm::value_ptr(light.position), 0.01f);
+            ImGui::DragFloat3("l.direction", glm::value_ptr(light.direction), 0.01f);
+            ImGui::DragFloat("l.cutoff", glm::value_ptr(light.cutoff), 0.5f, 0.0f, 90.0f);
+            ImGui::DragFloat("l.distance", &light.distance, 0.5f, 0.0f, 3000.0f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(light.ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(light.diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(light.specular));
@@ -138,6 +141,10 @@ void Context::Render() {
     program->Use();
     program->SetUniform("viewPos", cameraPos);
 	program->SetUniform("light.position", light.position);
+    program->SetUniform("light.direction", light.direction);
+	program->SetUniform("light.cutoff", glm::vec2(
+        cosf(glm::radians(light.cutoff[0])),
+        cosf(glm::radians(light.cutoff[0] + light.cutoff[1]))));
     program->SetUniform("light.attenuation", GetAttenuationCoeff(light.distance));
     program->SetUniform("light.ambient", light.ambient);
     program->SetUniform("light.diffuse", light.diffuse);
