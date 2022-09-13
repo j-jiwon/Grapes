@@ -85,7 +85,7 @@ void Context::Render() {
         }
 
         if (ImGui::CollapsingHeader("light", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::DragFloat3("l.position", glm::value_ptr(light.position), 0.01f);
+            ImGui::DragFloat3("l.direction", glm::value_ptr(light.direction), 0.01f);
             ImGui::ColorEdit3("l.ambient", glm::value_ptr(light.ambient));
             ImGui::ColorEdit3("l.diffuse", glm::value_ptr(light.diffuse));
             ImGui::ColorEdit3("l.specular", glm::value_ptr(light.specular));
@@ -125,19 +125,19 @@ void Context::Render() {
     auto view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     // after computing projection and view matrix
-    auto lightModelTransform =
-        glm::translate(glm::mat4(1.0), light.position) *
-        glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
+    // auto lightModelTransform =
+    //     glm::translate(glm::mat4(1.0), light.position) *
+    //     glm::scale(glm::mat4(1.0), glm::vec3(0.1f));
 
-    simpleProgram->Use();
-    simpleProgram->SetUniform("color", glm::vec4(light.ambient + light.diffuse, 1.0f));
-    simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+    // simpleProgram->Use();
+    // simpleProgram->SetUniform("color", glm::vec4(light.ambient + light.diffuse, 1.0f));
+    // simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
+    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     // set shader variables
     program->Use();
     program->SetUniform("viewPos", cameraPos);
-	program->SetUniform("light.position", light.position);
+	program->SetUniform("light.direction", light.direction);
     program->SetUniform("light.ambient", light.ambient);
     program->SetUniform("light.diffuse", light.diffuse);
     program->SetUniform("light.specular", light.specular);
