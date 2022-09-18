@@ -23,8 +23,11 @@ void Mesh::Init(
     vertexLayout->SetAttrib(2, 2, GL_FLOAT, false, sizeof(Vertex), offsetof(Vertex, texCoord));
 }
 
-void Mesh::Draw() const {
+void Mesh::Draw(const Program* program) const {
     vertexLayout->Bind();
+    if (material) {
+        material->SetToProgram(program);
+    }
     glDrawElements(primitiveType, indexBuffer->GetCount(), GL_UNSIGNED_INT, 0);
 }
 
@@ -71,4 +74,22 @@ std::unique_ptr<Mesh> Mesh::CreateBox() {
     };
 
     return Create(vertices, indices, GL_TRIANGLES);
+}
+
+void Material::SetToProgram(const Program* program) const {
+    int textureCount = 0;
+    if (diffuse) {
+        glActiveTexture(GL_TEXTURE0 + textureCount);
+        program->SetUniform("material.diffuse", textureCount);
+        diffuse->Bind();
+        textureCount++;
+    }
+    if (specular) {
+        glActiveTexture(GL_TEXTURE0 + textureCount);
+        program->SetUniform("material.specular", textureCount);
+        specular->Bind();
+        textureCount++;
+    }
+    glActiveTexture(GL_TEXTURE0);
+    program->SetUniform("material.shininess", shininess);
 }

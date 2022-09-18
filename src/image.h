@@ -7,6 +7,7 @@ class Image {
 public:
     static std::unique_ptr<Image> Load(const std::string& filepath);
     static std::unique_ptr<Image> Create(int width, int height, int channelCount=4);
+    static std::unique_ptr<Image> CreateSingleColorImage(int width, int height, const glm::vec4& color);
     ~Image();
 
     const uint8_t* GetData() const { return data; }

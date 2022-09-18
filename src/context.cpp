@@ -95,24 +95,11 @@ void Context::Render() {
         }
         
         if (ImGui::CollapsingHeader("material", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::DragFloat("m.shininess", &material.shininess, 1.0f, 1.0f, 256.0f);
+            ImGui::DragFloat("m.shininess", &material->shininess, 1.0f, 1.0f, 256.0f);
         }
         ImGui::Checkbox("animation", &animation);
     }
     ImGui::End();
-    
-    std::vector<glm::vec3> cubePositions = {
-        glm::vec3( 0.0f, 0.0f, 0.0f),
-        glm::vec3( 2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3( 2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3( 1.3f, -2.0f, -2.5f),
-        glm::vec3( 1.5f, 2.0f, -2.5f),
-        glm::vec3( 1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f),
-    };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -135,40 +122,26 @@ void Context::Render() {
     simpleProgram->Use();
     simpleProgram->SetUniform("color", glm::vec4(light.ambient + light.diffuse, 1.0f));
     simpleProgram->SetUniform("transform", projection * view * lightModelTransform);
-    box->Draw();
+    box->Draw(simpleProgram.get());
 
     // set shader variables
     program->Use();
     program->SetUniform("viewPos", cameraPos);
-	program->SetUniform("light.position", light.position);
+    program->SetUniform("light.position", light.position);
     program->SetUniform("light.direction", light.direction);
-	program->SetUniform("light.cutoff", glm::vec2(
-        cosf(glm::radians(light.cutoff[0])),
-        cosf(glm::radians(light.cutoff[0] + light.cutoff[1]))));
+    program->SetUniform("light.cutoff", glm::vec2(
+    cosf(glm::radians(light.cutoff[0])),
+    cosf(glm::radians(light.cutoff[0] + light.cutoff[1]))));
     program->SetUniform("light.attenuation", GetAttenuationCoeff(light.distance));
     program->SetUniform("light.ambient", light.ambient);
     program->SetUniform("light.diffuse", light.diffuse);
     program->SetUniform("light.specular", light.specular);
-    program->SetUniform("material.diffuse", 0);
-    program->SetUniform("material.specular", 1);
-    program->SetUniform("material.shininess", material.shininess);
 
-    glActiveTexture(GL_TEXTURE0);
-    material.diffuse->Bind();
-    glActiveTexture(GL_TEXTURE1);
-    material.specular->Bind();
-
-    for (size_t i = 0; i < cubePositions.size(); i++){
-        auto& pos = cubePositions[i];
-        auto model = glm::translate(glm::mat4(1.0f), pos);
-        model = glm::rotate(model,
-            glm::radians((animation ? (float)glfwGetTime() : 0.0f) * 120.0f + 20.0f * (float)i),
-            glm::vec3(1.0f, 0.5f, 0.0f));
-        auto transform = projection * view * model;
-        program->SetUniform("transform", transform);
-        program->SetUniform("modelTransform", model);
-        box->Draw();
-    }
+    auto modelTransform = glm::mat4(1.0f);
+    auto transform = projection * view * modelTransform;
+    program->SetUniform("transform", transform);
+    program->SetUniform("modelTransform", modelTransform);
+    model->Draw(program.get());
 }
 
 bool Context::Init() {
@@ -186,8 +159,18 @@ bool Context::Init() {
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glEnable(GL_DEPTH_TEST);
 
-    material.diffuse = Texture::CreateFromImage(Image::Load("./images/container2.png").get());
-    material.specular = Texture::CreateFromImage(Image::Load("./images/container2_specular.png").get());
+    model = Model::Load("./model/backpack.obj");
+    if (!model)
+        return false;
+
+    material = Material::Create();
+    material->diffuse = Texture::CreateFromImage( 
+        Image::CreateSingleColorImage(4, 4,
+        glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).get());
+
+    material->specular = Texture::CreateFromImage(
+        Image::CreateSingleColorImage(4, 4,
+        glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)).get());
 
     return true;
 }

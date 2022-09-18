@@ -8,6 +8,7 @@
 #include "vertex_layout.h"
 #include "texture.h"
 #include "mesh.h"
+#include "model.h"
 
 class Context {
 public:
@@ -25,7 +26,7 @@ private:
     std::unique_ptr<Program> simpleProgram;
 
     std::unique_ptr<Mesh> box;
-
+    std::unique_ptr<Model> model;
     std::unique_ptr<Texture> textureId;
     std::unique_ptr<Texture> textureId2;
 
@@ -34,7 +35,7 @@ private:
     glm::vec4 clearColor { glm::vec4(0.1f, 0.2f, 0.3f, 0.0f) };
 
     struct Light {
-	    glm::vec3 position { glm::vec3(2.0f, 2.0f, 2.0f) };
+	    glm::vec3 position { glm::vec3(1.0f, 1.0f, 1.0f) };
         glm::vec3 direction { glm::vec3(-1.0f, -1.0f, -1.0f) };
         glm::vec2 cutoff { glm::vec2(20.0f, 5.0f) };
         float distance { 32.0f };
@@ -43,13 +44,8 @@ private:
         glm::vec3 specular { glm::vec3(1.0f, 1.0f, 1.0f) };
     };
     Light light;
-
-    struct Material {
-        std::unique_ptr<Texture> diffuse;
-        std::unique_ptr<Texture> specular;
-        float shininess { 32.0f };
-    };
-    Material material;
+    
+    std::shared_ptr<Material> material;
 
     bool cameraControl { false };
     glm::vec2 prevMousePos { glm::vec2(0.0f) };
