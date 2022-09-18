@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "vertex_layout.h"
 #include "texture.h"
+#include "mesh.h"
 
 class Context {
 public:
@@ -23,9 +24,8 @@ private:
     std::unique_ptr<Program> program;
     std::unique_ptr<Program> simpleProgram;
 
-    std::unique_ptr<VertexLayout> vertexLayout;
-    std::unique_ptr<Buffer> vertexBuffer;
-    std::unique_ptr<Buffer> indexBuffer;
+    std::unique_ptr<Mesh> box;
+
     std::unique_ptr<Texture> textureId;
     std::unique_ptr<Texture> textureId2;
 

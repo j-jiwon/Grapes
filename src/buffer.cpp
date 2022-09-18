@@ -1,9 +1,9 @@
 #include "buffer.h"
 
 std::unique_ptr<Buffer> Buffer::CreateWithData(uint32_t _bufferType, uint32_t _usage,
-    const void* _data, size_t _dataSize){
+    const void* _data, size_t _stride, size_t _count){
     auto buf = std::unique_ptr<Buffer>(new Buffer());
-    if (!buf->Init(_bufferType, _usage, _data, _dataSize))
+    if (!buf->Init(_bufferType, _usage, _data, _stride, _count))
         return nullptr;
     return std::move(buf);
 }
@@ -19,11 +19,13 @@ void Buffer::Bind() const {
 }
 
 bool Buffer::Init(uint32_t _bufferType, uint32_t _usage,
-                const void* _data, size_t _dataSize) {
+                const void* _data, size_t _stride, size_t _count) {
     bufferType = _bufferType;
     usage = _usage;
+    stride = _stride;
+    count = _count;
     glGenBuffers(1, &buffer);
     Bind();
-    glBufferData(_bufferType, _dataSize, _data, _usage);
+    glBufferData(_bufferType, _stride *_count, _data, _usage);
     return true;
 }
