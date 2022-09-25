@@ -39,7 +39,7 @@ private:
         glm::vec3 direction { glm::vec3(-1.0f, -1.0f, -1.0f) };
         glm::vec2 cutoff { glm::vec2(20.0f, 5.0f) };
         float distance { 32.0f };
-        glm::vec3 ambient { glm::vec3(0.1f, 0.1f, 0.1f) };
+        glm::vec3 ambient { glm::vec3(0.8f, 0.8f, 0.8f) };
         glm::vec3 diffuse { glm::vec3(0.5f, 0.5f, 0.5f) };
         glm::vec3 specular { glm::vec3(1.0f, 1.0f, 1.0f) };
     };
